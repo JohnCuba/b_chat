@@ -1,14 +1,21 @@
 {
   "name": "b_chat",
-  "version": "1.0.50",
+  "version": "1.0.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "@elysiajs/static": "^1.4.7",
+    "daisyui": "^5.5.19",
+    "elysia": "latest",
+    "preact": "^10.29.1",
+    "preact-iso": "^2.11.1",
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
+    "@types/react-dom": "^19.2.3",
+    "bun-plugin-tailwind": "^0.1.2",
     "bun-types": "latest"
   },
   "module": "src/index.js"
