@@ -1,0 +1,31 @@
+{
+  "name": "@b_chat/web-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@b_chat/crypto": "workspace:*",
+    "@elysiajs/eden": "^1.4.9",
+    "@preact/signals": "^2.9.0",
+    "@tailwindcss/vite": "^4.2.4",
+    "bip39": "^3.1.0",
+    "classnames": "^2.5.1",
+    "daisyui": "^5.5.19",
+    "preact": "^10.29.1",
+    "preact-iso": "^2.11.1",
+    "tailwindcss": "^4.2.4",
+    "web-bip39": "^0.0.3"
+  },
+  "devDependencies": {
+    "@b_chat/backend": "workspace:*",
+    "@preact/preset-vite": "^2.10.5",
+    "@types/node": "^24.12.2",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.9"
+  }
+}
