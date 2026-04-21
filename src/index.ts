@@ -1,10 +1,15 @@
-import staticPlugin from '@elysiajs/static';
 import { Elysia } from 'elysia';
+import { viewModule } from './modules/view';
+import { chatModule } from './modules/chat';
+import { logger } from './lib/logger';
+
+logger.debug('starting server')
 
 const app = new Elysia()
-  	.use(
-  		await staticPlugin({
-  			prefix: '/*',
-   		})
-   )
-   .listen(3000);
+  .use(chatModule())
+  .use(viewModule())
+  .listen(process.env.PORT || 3000);
+
+logger.debug('server started at port %s', app.server?.port)
+
+export type App = typeof app;

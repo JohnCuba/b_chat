@@ -9,12 +9,18 @@ const HomePage = () => {
               Мгновенные чаты. Анонимно. Приватно.
             </p>
             <div class="flex justify-center gap-4">
-              <button class="btn btn-soft btn-success">
+              <a
+                class="btn btn-soft btn-success"
+                href="/create"
+              >
                 создать
-              </button>
-              <button class="btn btn-soft btn-accent">
-                присоединиться
-              </button>
+              </a>
+              <a
+                href="/join"
+                class="btn btn-soft btn-accent"
+              >
+                войти
+              </a>
             </div>
           </div>
         </div>
