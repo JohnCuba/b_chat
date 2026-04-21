@@ -1,5 +1,5 @@
 import { createModel, effect, signal, useModel } from "@preact/signals";
-import { deriveRoomId, deriveAuthKey, solveChallenge, encrypt, decrypt } from '../../../lib/crypto';
+import { deriveRoomId, deriveAuthKey, solveChallenge, encrypt, decrypt } from '@b_chat/crypto';
 
 type Seed = string | undefined;
 

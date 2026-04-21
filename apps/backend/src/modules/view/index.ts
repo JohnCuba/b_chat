@@ -1,11 +1,15 @@
-import staticPlugin from "@elysiajs/static";
 import Elysia from "elysia";
+import fs from 'fs/promises';
+import { join, dirname } from 'path'
 
-export const viewModule = async () =>
+export const viewModule = () =>
   new Elysia()
-    .use(
-      await staticPlugin({
-        prefix: '/*',
-        assets: 'public'
-      })
-    );
+    .get('/*', async ({path}) => {
+      const filePath = join('./public/', path)
+
+      if(path === dirname(path) || !await fs.exists(filePath)) {
+        return Bun.file('./public/index.html')
+      }
+
+      return Bun.file(filePath)
+    });

@@ -2,6 +2,13 @@
   "name": "b_chat_monorepo",
   "private": true,
   "workspaces": [
-    "apps/*"
-  ]
+    "apps/*",
+    "packages/**"
+  ],
+  "scripts": {
+    "dev": "bun run --filter '@b_chat/backend' dev & bun run --filter '@b_chat/web-ui' dev",
+    "build": "bun run --filter '@b_chat/web-ui' build & bun run --filter '@b_chat/backend' build",
+    "build:front": "bun run --filter '@b_chat/web-ui' build",
+    "start": "bun run --filter '@b_chat/backend' dev"
+  }
 }

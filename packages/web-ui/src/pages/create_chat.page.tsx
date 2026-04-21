@@ -1,5 +1,5 @@
 import { useUser } from '../hooks/use_user.hook';
-import { InputEventHandler } from 'preact';
+import type { InputEventHandler } from 'preact';
 import { useEncryption } from '../hooks/use_encryption.hook';
 import { useRoom } from '../hooks/use_room.hook';
 import { AuthTabs } from '../components/auth_tabs';

@@ -62,7 +62,7 @@ const ChatPage = () => {
                     <div class="chat-header opacity-70 text-xs">
                       {msg.name}
                     </div>
-                    <div class="chat-bubble text-left">
+                    <div class="chat-bubble chat-bubble-success text-left">
                       {msg.text}
                     </div>
                   </div>

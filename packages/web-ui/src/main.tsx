@@ -1,6 +1,8 @@
 import { render } from 'preact'
 import { ErrorBoundary, lazy, LocationProvider, Route, Router } from 'preact-iso'
 
+import './global.css'
+
 export const App = () => {
   return (
     <LocationProvider>
@@ -16,4 +18,4 @@ export const App = () => {
   )
 }
 
-render(App(), document.getElementById('root')!)
+render(<App />, document.getElementById('root')!)
