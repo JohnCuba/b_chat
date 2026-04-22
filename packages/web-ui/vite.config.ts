@@ -5,7 +5,10 @@ import path from 'node:path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [preact(), tailwindcss()],
+  plugins: [tailwindcss(), preact()],
+  resolve: {
+    mainFields: ['module', 'main'],
+  },
   build: {
     outDir: path.resolve(__dirname, '../../apps/backend/public'),
     emptyOutDir: true,
