@@ -1,7 +1,7 @@
 import { render } from 'preact'
 import { ErrorBoundary, lazy, LocationProvider, Route, Router } from 'preact-iso'
 
-import './global.css'
+import './style.css'
 
 export const App = () => {
   return (

@@ -55,8 +55,8 @@ const ChatPage = () => {
               }
             </div>
 
-            <div class="flex flex-col flex-1 justify-end overflow-y-auto p-4 gap-1">
-              <div class="h-full">
+            <div class="flex flex-col flex-1 overflow-y-auto p-4 gap-1">
+              <div class="flex flex-1 flex-col justify-end">
                 {chat.messages.value.map((msg) => (
                   <div class={`chat ${msg.own ? 'chat-end' : 'chat-start'}`}>
                     <div class="chat-header opacity-70 text-xs">
