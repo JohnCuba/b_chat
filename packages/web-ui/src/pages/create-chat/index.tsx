@@ -1,32 +1,37 @@
-import { useUser } from '../hooks/use_user.hook';
+import { useUser } from '../../hooks/use_user.hook';
 import type { InputEventHandler } from 'preact';
-import { useRoom } from '../hooks/use_room.hook';
-import { useEncryption } from '../hooks/use_encryption.hook';
-import { AuthTabs } from '../components/auth_tabs';
+import { useEncryption } from '../../hooks/use_encryption.hook';
+import { useRoom } from '../../hooks/use_room.hook';
+import { AuthTabs } from '../../components/auth_tabs';
+import './style.css'
 
-const JoinChatPage = () => {
+const CreateChatPage = () => {
   const user = useUser()
   const encryption = useEncryption()
   const room = useRoom()
 
   const handleChangeName: InputEventHandler<HTMLInputElement> = (event) => {
-    user.name.value = (event.target as HTMLInputElement).value;
+    user.name.value = (event.target as HTMLInputElement).value
   }
 
   const handleInputSeed: InputEventHandler<HTMLTextAreaElement> = (event) => {
-    encryption.seed.value = (event.target as HTMLTextAreaElement).value;
+    encryption.seed.value = (event.target as HTMLTextAreaElement).value
   }
 
-  const handleClickPaste = async () => {
-    encryption.seed.value = await navigator.clipboard.readText();
+  const handleClickGenerate = async () => {
+    await encryption.generateSeed()
   }
 
-  const handleClickJoin = async () => {
+  const handleClickCopy = async () => {
+    await navigator.clipboard.writeText(encryption.seed.value);
+  }
+
+  const handleClickCreate = async () => {
     if (!user.name.value) return
 
-    const target = await room.join()
+    const roomUrl = await room.create();
 
-    globalThis.location.replace(target)
+    globalThis.location.replace(roomUrl);
   }
 
   return (
@@ -34,7 +39,7 @@ const JoinChatPage = () => {
       <div class="hero bg-base-200 min-h-screen">
         <div class="hero-content text-center">
           <div class="flex flex-col gap-4 min-w-xs">
-            <AuthTabs active='join' />
+            <AuthTabs active='create' />
             <input
               value={user.name}
               onInput={handleChangeName}
@@ -53,15 +58,20 @@ const JoinChatPage = () => {
                 rows={4}
                 minLength={1}
               />
-              <button class="btn btn-info" onClick={handleClickPaste}>
-                вставить
-              </button>
+              <div class="join">
+                <button class="join-item flex-1 btn btn-warning" onClick={handleClickGenerate}>
+                  сгенерировать
+                </button>
+                <button class="join-item flex-1 btn btn-info" onClick={handleClickCopy}>
+                  копировать
+                </button>
+              </div>
             </div>
             <button
               class="btn btn-success"
-              onClick={handleClickJoin}
+              onClick={handleClickCreate}
             >
-              войти
+              создать
             </button>
           </div>
         </div>
@@ -70,4 +80,4 @@ const JoinChatPage = () => {
   )
 }
 
-export default JoinChatPage;
+export default CreateChatPage;
