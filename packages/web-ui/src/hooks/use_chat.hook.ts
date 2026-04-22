@@ -1,6 +1,7 @@
 import { signal, createModel, useModel, type Signal } from '@preact/signals';
 import { useEncryption } from './use_encryption.hook';
 import { backend } from '../services/backend';
+import { useRoom } from './use_room.hook';
 
 export interface Message {
   name: string;
@@ -19,6 +20,7 @@ const ChatModel = createModel<{
   send: (name: string, text: string) => void;
   disconnect: () => void;
 }>(() => {
+  const room = useRoom()
   const encryption = useEncryption();
 
   let ws: ReturnType<typeof backend.api.chat.subscribe> | null = null;
@@ -55,8 +57,13 @@ const ChatModel = createModel<{
 
       if (data.type === 'error') {
         if (data.message === 'room_not_found') {
-          alert('Комната не найдена');
-          globalThis.location.replace('/join');
+          if (roomId !== await encryption.getRoomId()) {
+            alert('Неверная seed фраза');
+            globalThis.location.replace('/join');
+          }
+
+          const url = await room.create()
+          connect(url.searchParams.get('id'))
         } else if (data.message === 'auth_failed') {
           alert('Неверная seed фраза');
           globalThis.location.replace('/join');
