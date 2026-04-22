@@ -8,10 +8,10 @@ export const App = () => {
     <LocationProvider>
       <ErrorBoundary>
         <Router>
-          <Route path='/' component={lazy(() => import('./pages/home.page'))} />
-          <Route path='/create' component={lazy(() => import('./pages/create_chat.page'))} />
-          <Route path='/join' component={lazy(() => import('./pages/join_chat.page'))} />
-          <Route path='/chat' component={lazy(() => import('./pages/chat.page'))} />
+          <Route path='/' component={lazy(() => import('./pages/home'))} />
+          <Route path='/create' component={lazy(() => import('./pages/create-chat'))} />
+          <Route path='/join' component={lazy(() => import('./pages/join-chat'))} />
+          <Route path='/chat' component={lazy(() => import('./pages/chat'))} />
         </Router>
       </ErrorBoundary>
     </LocationProvider>

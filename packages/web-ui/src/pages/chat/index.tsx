@@ -1,8 +1,9 @@
 import { useRef, useEffect } from 'preact/hooks';
 import { useRoute } from 'preact-iso';
-import { useUser } from '../hooks/use_user.hook';
-import { useChat } from '../hooks/use_chat.hook';
+import { useUser } from '../../hooks/use_user.hook';
+import { useChat } from '../../hooks/use_chat.hook';
 import cn from 'classnames';
+import './style.css'
 
 const ChatPage = () => {
   const route = useRoute();
