@@ -17,6 +17,10 @@ const JoinChatPage = () => {
     encryption.seed.value = (event.target as HTMLTextAreaElement).value;
   }
 
+  const handleClickPaste = async () => {
+    encryption.seed.value = await navigator.clipboard.readText();
+  }
+
   const handleClickJoin = async () => {
     if (!user.name.value) return
 
@@ -39,13 +43,20 @@ const JoinChatPage = () => {
               placeholder="Your name"
               class="input input-lg"
             />
-            <textarea
-              value={encryption.seed}
-              onInput={handleInputSeed}
-              class="textarea textarea-lg"
-              name="seed-phrase"
-              placeholder="Seed phrase"
-            />
+            <div class="flex flex-col gap-2">
+              <textarea
+                value={encryption.seed}
+                onInput={handleInputSeed}
+                class="textarea textarea-lg"
+                name="seed-phrase"
+                placeholder="Seed phrase"
+                rows={4}
+                minLength={1}
+              />
+              <button class="btn btn-info" onClick={handleClickPaste}>
+                вставить
+              </button>
+            </div>
             <button
               class="btn btn-success"
               onClick={handleClickJoin}
