@@ -21,6 +21,10 @@ const CreateChatPage = () => {
     await encryption.generateSeed()
   }
 
+  const handleClickCopy = async () => {
+    await navigator.clipboard.writeText(encryption.seed.value);
+  }
+
   const handleClickCreate = async () => {
     if (!user.name.value) return
 
@@ -50,10 +54,17 @@ const CreateChatPage = () => {
                 class="textarea textarea-lg"
                 name="seed-phrase"
                 placeholder="Seed phrase"
+                rows={4}
+                minLength={1}
               />
-              <button class="btn btn-warning" onClick={handleClickGenerate}>
-                сгенерировать
-              </button>
+              <div class="join">
+                <button class="join-item flex-1 btn btn-warning" onClick={handleClickGenerate}>
+                  сгенерировать
+                </button>
+                <button class="join-item flex-1 btn btn-info" onClick={handleClickCopy}>
+                  копировать
+                </button>
+              </div>
             </div>
             <button
               class="btn btn-success"
