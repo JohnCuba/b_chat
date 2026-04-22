@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'preact/hooks';
 import { useRoute } from 'preact-iso';
 import { useUser } from '../hooks/use_user.hook';
 import { useChat } from '../hooks/use_chat.hook';
+import cn from 'classnames';
 
 const ChatPage = () => {
   const route = useRoute();
@@ -49,20 +50,22 @@ const ChatPage = () => {
             <div class="navbar bg-base-100 shadow-sm">
               <span class="text-xl font-bold px-4">b_chat</span>
               <div class="flex-1" />
-              {chat.connected.value
-                ? <span class="badge badge-success">connected</span>
-                : <span class="badge badge-warning">connecting...</span>
-              }
+              <span
+                class={cn('status animate-ping', {
+                  'status-warning': !chat.connected.value,
+                  'status-success': chat.connected.value
+                })}
+              />
             </div>
 
             <div class="flex flex-col flex-1 overflow-y-auto p-4 gap-1">
               <div class="flex flex-1 flex-col justify-end">
                 {chat.messages.value.map((msg) => (
-                  <div class={`chat ${msg.own ? 'chat-end' : 'chat-start'}`}>
+                  <div class={cn('chat', { 'chat-end': msg.own, 'chat-start': !msg.own })}>
                     <div class="chat-header opacity-70 text-xs">
                       {msg.name}
                     </div>
-                    <div class="chat-bubble chat-bubble-success text-left">
+                    <div class={cn('chat-bubble text-left', { 'chat-bubble-success': msg.own })}>
                       {msg.text}
                     </div>
                   </div>
