@@ -1,4 +1,5 @@
 import { signal, createModel, useModel, type Signal } from '@preact/signals';
+import type { ServerMessage, ClientMessage } from '@b_chat/protocol';
 import { useEncryption } from './use_encryption.hook';
 import { backend } from '../services/backend';
 import { useRoom } from './use_room.hook';
@@ -34,39 +35,42 @@ const ChatModel = createModel<{
     ws = backend.api.chat.subscribe({ query: { id: roomId } });
 
     ws.on('message', async (event) => {
-      const data = event.data as any;
+      const data = event.data as ServerMessage;
 
-      if (data.type === 'challenge') {
-        const proof = await encryption.getProof(data.nonce);
-        ws!.send({ type: 'challenge_response', proof });
-      }
+      switch (data.type) {
+        case 'challenge': {
+          const proof = await encryption.getProof(data.nonce);
+          ws!.send({ type: 'challenge_response', proof } satisfies ClientMessage);
+          break;
+        }
+        case 'authenticated': {
+          connected.value = true;
+          break;
+        }
+        case 'error': {
+            if (data.message === 'room_not_found') {
+              if (roomId !== await encryption.getRoomId()) {
+                alert('Неверная seed фраза');
+                globalThis.location.replace('/start');
+              }
 
-      if (data.type === 'authenticated') {
-        connected.value = true;
-      }
-
-      if (data.type === 'message') {
-        const text = await encryption.decryptMessage(data.text);
-        messages.value = [...messages.value, {
-          name: data.name,
-          text,
-          ts: data.ts,
-          own: false,
-        }];
-      }
-
-      if (data.type === 'error') {
-        if (data.message === 'room_not_found') {
-          if (roomId !== await encryption.getRoomId()) {
-            alert('Неверная seed фраза');
-            globalThis.location.replace('/start');
-          }
-
-          const url = await room.create()
-          connect(url.searchParams.get('id'))
-        } else if (data.message === 'auth_failed') {
-          alert('Неверная seed фраза');
-          globalThis.location.replace('/start');
+              const url = await room.create()
+              connect(url.searchParams.get('id'))
+            } else if (data.message === 'auth_failed') {
+              alert('Неверная seed фраза');
+              globalThis.location.replace('/start');
+            }
+          break;
+        }
+        case 'message': {
+          const text = await encryption.decryptMessage(data.text);
+          messages.value = [...messages.value, {
+            name: data.name,
+            text,
+            ts: data.ts,
+            own: false,
+          }];
+          break;
         }
       }
     });
@@ -75,7 +79,7 @@ const ChatModel = createModel<{
   const send = async (name: string, text: string) => {
     if (!ws || !connected.value) return;
     const encrypted = await encryption.encryptMessage(text);
-    ws.send({ type: 'message', name, text: encrypted });
+    ws.send({ type: 'message', name, text: encrypted } satisfies ClientMessage);
     messages.value = [...messages.value, { name, text, ts: Date.now(), own: true }];
   };
 

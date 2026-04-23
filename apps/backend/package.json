@@ -9,6 +9,7 @@
     "build": "bun build --compile --minify --target bun --outfile b_chat src/index.ts"
   },
   "dependencies": {
+    "@b_chat/protocol": "workspace:*",
     "@elysiajs/static": "^1.4.9",
     "elysia": "latest",
     "pino": "^10.3.1",
