@@ -1,9 +1,4 @@
-import type { Room, RoomRepository } from '../model/rooms';
-
-interface RoomEntry extends Room {
-  connections: Map<string, any>;
-  pendingChallenges: Map<string, string>;
-}
+import type { Room, RoomEntry, RoomRepository } from '../model/rooms';
 
 export class MemoryRoomRepository implements RoomRepository {
   private rooms = new Map<string, RoomEntry>();

@@ -3,11 +3,10 @@ import { randomBytes, createHmac, timingSafeEqual } from 'crypto';
 import { logger } from '../../lib/logger';
 import { MemoryRoomRepository } from './repository';
 
-const rooms = new MemoryRoomRepository();
-
 export const chatModule = () =>
   new Elysia({ prefix: '/api' })
-    .post('/room', ({ body, set }) => {
+    .decorate('rooms', new MemoryRoomRepository())
+    .post('/room', ({ body, set, rooms }) => {
       const { roomId, authKey } = body;
 
       if (!rooms.create(roomId, authKey)) {
@@ -28,7 +27,7 @@ export const chatModule = () =>
 
       open(ws) {
         const roomId = ws.data.query.id;
-        const room = rooms.get(roomId);
+        const room = ws.data.rooms.get(roomId);
 
         if (!room) {
           ws.send(JSON.stringify({ type: 'error', message: 'room_not_found' }));
@@ -37,16 +36,16 @@ export const chatModule = () =>
         }
 
         const nonce = randomBytes(32).toString('hex');
-        rooms.setPendingChallenge(roomId, ws.id, nonce);
+        ws.data.rooms.setPendingChallenge(roomId, ws.id, nonce);
         ws.send(JSON.stringify({ type: 'challenge', nonce }));
       },
 
       message(ws, body: any) {
         const roomId = ws.data.query.id;
-        const room = rooms.get(roomId);
+        const room = ws.data.rooms.get(roomId);
         if (!room) return;
 
-        const pendingNonce = rooms.getPendingChallenge(roomId, ws.id);
+        const pendingNonce = ws.data.rooms.getPendingChallenge(roomId, ws.id);
 
         if (pendingNonce) {
           if (body.type !== 'challenge_response' || !body.proof) {
@@ -68,8 +67,8 @@ export const chatModule = () =>
             return;
           }
 
-          rooms.deletePendingChallenge(roomId, ws.id);
-          rooms.addConnection(roomId, ws.id, ws);
+          ws.data.rooms.deletePendingChallenge(roomId, ws.id);
+          ws.data.rooms.addConnection(roomId, ws.id, ws);
           ws.send(JSON.stringify({ type: 'authenticated' }));
           return;
         }
@@ -81,7 +80,7 @@ export const chatModule = () =>
             text: body.text,
             ts: Date.now(),
           });
-          const connections = rooms.getConnections(roomId);
+          const connections = ws.data.rooms.getConnections(roomId);
           if (connections) {
             for (const [id, conn] of connections) {
               if (id !== ws.id) conn.send(outgoing);
@@ -92,11 +91,11 @@ export const chatModule = () =>
 
       close(ws) {
         const roomId = ws.data.query.id;
-        rooms.removeConnection(roomId, ws.id);
-        rooms.deletePendingChallenge(roomId, ws.id);
+        ws.data.rooms.removeConnection(roomId, ws.id);
+        ws.data.rooms.deletePendingChallenge(roomId, ws.id);
 
-        if (rooms.isEmpty(roomId)) {
-          rooms.delete(roomId);
+        if (ws.data.rooms.isEmpty(roomId)) {
+          ws.data.rooms.delete(roomId);
           logger.debug({ roomId }, 'room removed (empty)');
         }
       },
