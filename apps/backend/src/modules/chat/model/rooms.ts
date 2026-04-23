@@ -2,6 +2,11 @@ export interface Room {
   authKey: string;
 }
 
+export interface RoomEntry extends Room {
+  connections: Map<string, any>;
+  pendingChallenges: Map<string, string>;
+}
+
 export interface RoomRepository {
   create(roomId: string, authKey: string): boolean;
   get(roomId: string): Room | undefined;
