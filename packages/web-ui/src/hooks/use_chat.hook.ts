@@ -27,7 +27,7 @@ const ChatModel = createModel<{
 
   const connect = (roomId: string) => {
     if (!encryption.seed.value) {
-      globalThis.location.replace('/join');
+      globalThis.location.replace('/start');
       return;
     }
 
@@ -59,14 +59,14 @@ const ChatModel = createModel<{
         if (data.message === 'room_not_found') {
           if (roomId !== await encryption.getRoomId()) {
             alert('Неверная seed фраза');
-            globalThis.location.replace('/join');
+            globalThis.location.replace('/start');
           }
 
           const url = await room.create()
           connect(url.searchParams.get('id'))
         } else if (data.message === 'auth_failed') {
           alert('Неверная seed фраза');
-          globalThis.location.replace('/join');
+          globalThis.location.replace('/start');
         }
       }
     });
