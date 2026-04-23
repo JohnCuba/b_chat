@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@b_chat/crypto": "workspace:*",
+    "@b_chat/protocol": "workspace:*",
     "@elysiajs/eden": "^1.4.9",
     "@preact/signals": "^2.9.0",
     "@tailwindcss/vite": "^4.2.4",

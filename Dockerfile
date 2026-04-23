@@ -7,6 +7,7 @@ COPY package.json bun.lock ./
 COPY apps/backend/package.json apps/backend/
 COPY packages/web-ui/package.json packages/web-ui/
 COPY packages/crypto/package.json packages/crypto/
+COPY packages/protocol/package.json packages/protocol/
 
 RUN bun install --frozen-lockfile
 

@@ -1,7 +1,10 @@
 import Elysia, { t } from 'elysia';
 import { randomBytes, createHmac, timingSafeEqual } from 'crypto';
+import type { ServerMessage, ClientMessage, ChallengeMessage, AuthenticatedMessage, ErrorMessage, IncomingChatMessage } from '@b_chat/protocol';
 import { logger } from '../../lib/logger';
 import { MemoryRoomRepository } from './repository';
+
+const encode = (msg: ServerMessage) => JSON.stringify(msg);
 
 export const chatModule = () =>
   new Elysia({ prefix: '/api' })
@@ -30,17 +33,17 @@ export const chatModule = () =>
         const room = ws.data.rooms.get(roomId);
 
         if (!room) {
-          ws.send(JSON.stringify({ type: 'error', message: 'room_not_found' }));
+          ws.send(encode({ type: 'error', message: 'room_not_found' } satisfies ErrorMessage));
           ws.close();
           return;
         }
 
         const nonce = randomBytes(32).toString('hex');
         ws.data.rooms.setPendingChallenge(roomId, ws.id, nonce);
-        ws.send(JSON.stringify({ type: 'challenge', nonce }));
+        ws.send(encode({ type: 'challenge', nonce } satisfies ChallengeMessage));
       },
 
-      message(ws, body: any) {
+      message(ws, body: ClientMessage) {
         const roomId = ws.data.query.id;
         const room = ws.data.rooms.get(roomId);
         if (!room) return;
@@ -48,8 +51,8 @@ export const chatModule = () =>
         const pendingNonce = ws.data.rooms.getPendingChallenge(roomId, ws.id);
 
         if (pendingNonce) {
-          if (body.type !== 'challenge_response' || !body.proof) {
-            ws.send(JSON.stringify({ type: 'error', message: 'expected_challenge_response' }));
+          if (body.type !== 'challenge_response') {
+            ws.send(encode({ type: 'error', message: 'expected_challenge_response' } satisfies ErrorMessage));
             return;
           }
 
@@ -62,24 +65,24 @@ export const chatModule = () =>
 
           if (proofBuf.length !== expectedBuf.length ||
               !timingSafeEqual(proofBuf, expectedBuf)) {
-            ws.send(JSON.stringify({ type: 'error', message: 'auth_failed' }));
+            ws.send(encode({ type: 'error', message: 'auth_failed' } satisfies ErrorMessage));
             ws.close();
             return;
           }
 
           ws.data.rooms.deletePendingChallenge(roomId, ws.id);
           ws.data.rooms.addConnection(roomId, ws.id, ws);
-          ws.send(JSON.stringify({ type: 'authenticated' }));
+          ws.send(encode({ type: 'authenticated' } satisfies AuthenticatedMessage));
           return;
         }
 
-        if (body.type === 'message' && body.text && body.name) {
-          const outgoing = JSON.stringify({
+        if (body.type === 'message') {
+          const outgoing = encode({
             type: 'message',
             name: body.name,
             text: body.text,
             ts: Date.now(),
-          });
+          } satisfies IncomingChatMessage);
           const connections = ws.data.rooms.getConnections(roomId);
           if (connections) {
             for (const [id, conn] of connections) {
