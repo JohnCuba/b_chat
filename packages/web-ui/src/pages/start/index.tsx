@@ -2,10 +2,9 @@ import { useUser } from '../../hooks/use_user.hook';
 import type { InputEventHandler } from 'preact';
 import { useEncryption } from '../../hooks/use_encryption.hook';
 import { useRoom } from '../../hooks/use_room.hook';
-import { AuthTabs } from '../../components/auth_tabs';
 import './style.css'
 
-const CreateChatPage = () => {
+const StartPage = () => {
   const user = useUser()
   const encryption = useEncryption()
   const room = useRoom()
@@ -26,6 +25,10 @@ const CreateChatPage = () => {
     await navigator.clipboard.writeText(encryption.seed.value);
   }
 
+  const handleClickPaste = async () => {
+    encryption.seed.value = await navigator.clipboard.readText();
+  }
+
   const handleClickCreate = async () => {
     if (!user.name.value) return
 
@@ -39,7 +42,6 @@ const CreateChatPage = () => {
       <div class="hero bg-base-200 min-h-screen">
         <div class="hero-content text-center">
           <div class="flex flex-col gap-4 min-w-xs">
-            <AuthTabs active='create' />
             <input
               value={user.name}
               onInput={handleChangeName}
@@ -58,11 +60,14 @@ const CreateChatPage = () => {
                 rows={4}
                 minLength={1}
               />
+              <button class="btn btn-soft btn-warning" onClick={handleClickGenerate}>
+                сгенерировать
+              </button>
               <div class="join">
-                <button class="join-item flex-1 btn btn-warning" onClick={handleClickGenerate}>
-                  сгенерировать
+                <button class="join-item flex-1 btn btn-soft btn-info" onClick={handleClickPaste}>
+                  вставить
                 </button>
-                <button class="join-item flex-1 btn btn-info" onClick={handleClickCopy}>
+                <button class="join-item flex-1 btn btn-soft btn-secondary" onClick={handleClickCopy}>
                   копировать
                 </button>
               </div>
@@ -71,7 +76,7 @@ const CreateChatPage = () => {
               class="btn btn-success"
               onClick={handleClickCreate}
             >
-              создать
+              начать
             </button>
           </div>
         </div>
@@ -80,4 +85,4 @@ const CreateChatPage = () => {
   )
 }
 
-export default CreateChatPage;
+export default StartPage;
