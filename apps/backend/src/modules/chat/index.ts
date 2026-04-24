@@ -1,14 +1,17 @@
 import Elysia, { t } from 'elysia';
 import { randomBytes, createHmac, timingSafeEqual } from 'crypto';
-import type { ServerMessage, ClientMessage, ChallengeMessage, AuthenticatedMessage, ErrorMessage, IncomingChatMessage } from '@b_chat/protocol';
+import type { ServerMessage, ClientMessage, ChallengeMessage, AuthenticatedMessage, ErrorMessage, IncomingChatMessage, ConnectionsMessage } from '@b_chat/protocol';
 import { logger } from '../../lib/logger';
 import { MemoryRoomRepository } from './repository';
+import { cron } from '@elysia/cron';
 
 const encode = (msg: ServerMessage) => JSON.stringify(msg);
 
-export const chatModule = () =>
-  new Elysia({ prefix: '/api' })
-    .decorate('rooms', new MemoryRoomRepository())
+export const chatModule = () => {
+  const rooms = new MemoryRoomRepository();
+
+  return new Elysia({ prefix: '/api' })
+    .decorate('rooms', rooms)
     .post('/room', ({ body, set, rooms }) => {
       const { roomId, authKey } = body;
 
@@ -73,6 +76,13 @@ export const chatModule = () =>
           ws.data.rooms.deletePendingChallenge(roomId, ws.id);
           ws.data.rooms.addConnection(roomId, ws.id, ws);
           ws.send(encode({ type: 'authenticated' } satisfies AuthenticatedMessage));
+          const connections = ws.data.rooms.getConnections(roomId);
+          if (!connections) return;
+
+          for (const [, conn] of connections) {
+            conn.send(encode({ type: 'connections', count: connections.size } satisfies ConnectionsMessage));
+          }
+
           return;
         }
 
@@ -102,4 +112,20 @@ export const chatModule = () =>
           logger.debug({ roomId }, 'room removed (empty)');
         }
       },
-    });
+    })
+    .use(
+      cron({
+        name: 'heartbeat',
+        pattern: '*/10 * * * * *',
+        run() {
+          const allConnections = rooms.getAllRoomConnections();
+          for (const [, connections] of allConnections) {
+            const msg = encode({ type: 'connections', count: connections.size } satisfies ConnectionsMessage);
+            for (const [, conn] of connections) {
+              conn.send(msg);
+            }
+          }
+        }
+      })
+    );
+}

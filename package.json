@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "dev": "bun run --filter '@b_chat/backend' dev & bun run --filter '@b_chat/web-ui' dev",
-    "build": "bun run --filter '@b_chat/web-ui' build & bun run --filter '@b_chat/backend' build",
+    "build": "bun run --filter '@b_chat/*' build",
     "build:front": "bun run --filter '@b_chat/web-ui' build",
     "start": "bun run --filter '@b_chat/backend' dev"
   }

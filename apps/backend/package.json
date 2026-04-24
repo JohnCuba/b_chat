@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@b_chat/protocol": "workspace:*",
+    "@elysia/cron": "^1.4.2",
     "@elysiajs/static": "^1.4.9",
     "elysia": "latest",
     "pino": "^10.3.1",
