@@ -48,15 +48,18 @@ const ChatPage = () => {
       <div class="hero bg-base-200 min-h-screen">
         <div class="hero-content text-center p-0 w-full">
           <div class="min-w-xs w-full max-w-lg h-screen flex flex-col">
-            <div class="navbar bg-base-100 shadow-sm">
-              <span class="text-xl font-bold px-4">b_chat</span>
+            <div class="navbar bg-base-100 shadow-sm px-4">
+              <span class="text-xl font-bold">b_chat</span>
               <div class="flex-1" />
-              <span
-                class={cn('status animate-ping', {
-                  'status-warning': !chat.connected.value,
-                  'status-success': chat.connected.value
-                })}
-              />
+              <div class="flex items-center gap-4">
+                <span>{chat.connectionsCount}</span>
+                <span
+                  class={cn('status animate-ping', {
+                    'status-warning': !chat.connected.value,
+                    'status-success': chat.connected.value
+                  })}
+                />
+              </div>
             </div>
 
             <div class="flex flex-col flex-1 overflow-y-auto p-4 gap-1">

@@ -1,5 +1,10 @@
 // Server -> Client messages
 
+export interface ConnectionsMessage {
+  type: 'connections';
+  count: number;
+}
+
 export interface ChallengeMessage {
   type: 'challenge';
   nonce: string;
@@ -25,7 +30,8 @@ export type ServerMessage =
   | ChallengeMessage
   | AuthenticatedMessage
   | ErrorMessage
-  | IncomingChatMessage;
+  | IncomingChatMessage
+  | ConnectionsMessage;
 
 // Client -> Server messages
 

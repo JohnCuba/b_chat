@@ -13,10 +13,12 @@ export interface Message {
 
 const messages = signal<Message[]>([]);
 const connected = signal(false);
+const connectionsCount = signal<number>(0);
 
 const ChatModel = createModel<{
   messages: Signal<Message[]>;
   connected: Signal<boolean>;
+  connectionsCount: Signal<number>;
   connect: (roomId: string) => void;
   send: (name: string, text: string) => void;
   disconnect: () => void;
@@ -62,6 +64,10 @@ const ChatModel = createModel<{
             }
           break;
         }
+        case 'connections': {
+          connectionsCount.value = data.count;
+          break;
+        }
         case 'message': {
           const text = await encryption.decryptMessage(data.text);
           messages.value = [...messages.value, {
@@ -93,6 +99,7 @@ const ChatModel = createModel<{
   return {
     messages,
     connected,
+    connectionsCount,
     connect,
     send,
     disconnect,

@@ -1,3 +1,4 @@
+import type { ServerWebSocket } from "elysia/ws/bun";
 import type { Room, RoomEntry, RoomRepository } from '../model/rooms';
 
 export class MemoryRoomRepository implements RoomRepository {
@@ -28,7 +29,7 @@ export class MemoryRoomRepository implements RoomRepository {
     this.rooms.delete(roomId);
   }
 
-  addConnection(roomId: string, connId: string, ws: any): void {
+  addConnection(roomId: string, connId: string, ws: ServerWebSocket<unknown>): void {
     this.rooms.get(roomId)?.connections.set(connId, ws);
   }
 
@@ -36,7 +37,7 @@ export class MemoryRoomRepository implements RoomRepository {
     this.rooms.get(roomId)?.connections.delete(connId);
   }
 
-  getConnections(roomId: string): Map<string, any> | undefined {
+  getConnections(roomId: string): Map<string, ServerWebSocket<unknown>> | undefined {
     return this.rooms.get(roomId)?.connections;
   }
 
@@ -56,5 +57,15 @@ export class MemoryRoomRepository implements RoomRepository {
     const entry = this.rooms.get(roomId);
     if (!entry) return true;
     return entry.connections.size === 0 && entry.pendingChallenges.size === 0;
+  }
+
+  getAllRoomConnections(): Map<string, Map<string, ServerWebSocket<unknown>>> {
+    const result = new Map<string, Map<string, ServerWebSocket<unknown>>>();
+    for (const [roomId, entry] of this.rooms) {
+      if (entry.connections.size > 0) {
+        result.set(roomId, entry.connections);
+      }
+    }
+    return result;
   }
 }
