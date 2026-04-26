@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 import { brotliCompressSync } from 'node:zlib'
 import { writeFileSync } from 'node:fs'
+import wasm from "vite-plugin-wasm";
 
 function brotli(): Plugin {
   return {
@@ -25,7 +26,7 @@ function brotli(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [tailwindcss(), preact(), brotli()],
+  plugins: [tailwindcss(), preact(), brotli(), wasm()],
   resolve: {
     mainFields: ['module', 'main'],
   },

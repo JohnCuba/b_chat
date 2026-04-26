@@ -1,5 +1,5 @@
 import { createModel, effect, signal, useModel } from "@preact/signals";
-import { deriveRoomId, deriveAuthKey, solveChallenge, encrypt, decrypt } from '@b_chat/crypto';
+import { solveChallenge, encrypt, decrypt, deriveRoomId, deriveAuthKey, genSeed } from '@b_chat/crypto';
 
 type Seed = string | undefined;
 
@@ -7,11 +7,7 @@ const seed = signal<Seed>(sessionStorage.getItem('seed') || undefined)
 
 const EncryptionModel = createModel(() => {
   const generateSeed = async () => {
-    // TODO: Dynamic import dosen't work in build but, leave it for future
-    const bip39 = await import('bip39');
-    const webBip39 = await import('web-bip39');
-
-    seed.value = await webBip39.generateMnemonic(bip39.wordlists['english'], 128);
+    seed.value = genSeed();
   }
 
   const getRoomId = async () => {
