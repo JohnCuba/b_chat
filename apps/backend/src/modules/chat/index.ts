@@ -115,7 +115,7 @@ export const chatModule = () => {
     })
     .use(
       cron({
-        name: 'heartbeat',
+        name: 'connections',
         pattern: '*/10 * * * * *',
         run() {
           const allConnections = rooms.getAllRoomConnections();
