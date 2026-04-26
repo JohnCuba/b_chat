@@ -1,36 +1,42 @@
 import { useUser } from '../../hooks/use_user.hook';
-import type { InputEventHandler } from 'preact';
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import cn from 'classnames'
 import { useEncryption } from '../../hooks/use_encryption.hook';
 import { useRoom } from '../../hooks/use_room.hook';
 import './style.css'
 
+type Inputs = {
+  name: string
+  seed: string
+}
+
 const StartPage = () => {
+  const {
+    getValues,
+    setValue,
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm<Inputs>()
   const user = useUser()
   const encryption = useEncryption()
   const room = useRoom()
 
-  const handleChangeName: InputEventHandler<HTMLInputElement> = (event) => {
-    user.name.value = (event.target as HTMLInputElement).value
-  }
-
-  const handleInputSeed: InputEventHandler<HTMLTextAreaElement> = (event) => {
-    encryption.seed.value = (event.target as HTMLTextAreaElement).value
-  }
-
   const handleClickGenerate = async () => {
-    await encryption.generateSeed()
+    setValue('seed', await encryption.generateSeed());
   }
 
   const handleClickCopy = async () => {
-    await navigator.clipboard.writeText(encryption.seed.value);
+    await navigator.clipboard.writeText(getValues('seed'));
   }
 
   const handleClickPaste = async () => {
-    encryption.seed.value = await navigator.clipboard.readText();
+    setValue('seed', await navigator.clipboard.readText());
   }
 
-  const handleClickCreate = async () => {
-    if (!user.name.value) return
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    user.name.value = data.name;
+    encryption.seed.value = data.seed;
 
     const roomUrl = await room.create();
 
@@ -41,44 +47,67 @@ const StartPage = () => {
     <main>
       <div class="hero bg-base-200 min-h-screen">
         <div class="hero-content text-center">
-          <div class="flex flex-col gap-4 min-w-xs">
-            <input
-              value={user.name}
-              onInput={handleChangeName}
-              name="name"
-              type="text"
-              placeholder="Your name"
-              class="input input-lg"
-            />
-            <div class="flex flex-col gap-2">
-              <textarea
-                value={encryption.seed}
-                onInput={handleInputSeed}
-                class="textarea textarea-lg"
-                name="seed-phrase"
-                placeholder="Seed phrase"
-                rows={4}
-                minLength={1}
+          <form
+            class="flex flex-col min-w-xs"
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            <div class="fieldset">
+              <legend class="fieldset-legend">Имя</legend>
+              <input
+                type="text"
+                placeholder="Кто-то"
+                class="input"
+                defaultValue={user.name.value}
+                {...register('name')}
               />
-              <button class="btn btn-soft btn-warning" onClick={handleClickGenerate}>
+              <p class="label">Можешь оставить это поле пустым</p>
+            </div>
+            <div class="flex flex-col gap-2">
+              <div class="fieldset">
+                <legend class="fieldset-legend">Фраза шифрования</legend>
+                <textarea
+                  class={cn("textarea", { 'textarea-error': errors.seed })}
+                  placeholder="Любой набор слов"
+                  rows={4}
+                  minLength={1}
+                  defaultValue={encryption.seed.value}
+                  {...register('seed', { required: true })}
+                />
+                <p class="label">
+                  Это кодавая фраза, она шифрует все.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn btn-soft btn-warning"
+                onClick={handleClickGenerate}
+              >
                 сгенерировать
               </button>
               <div class="join">
-                <button class="join-item flex-1 btn btn-soft btn-info" onClick={handleClickPaste}>
+                <button
+                  type="button"
+                  class="join-item flex-1 btn btn-soft btn-info"
+                  onClick={handleClickPaste}
+                >
                   вставить
                 </button>
-                <button class="join-item flex-1 btn btn-soft btn-secondary" onClick={handleClickCopy}>
+                <button
+                  type="button"
+                  class="join-item flex-1 btn btn-soft btn-secondary"
+                  onClick={handleClickCopy}
+                >
                   копировать
                 </button>
               </div>
             </div>
             <button
-              class="btn btn-success"
-              onClick={handleClickCreate}
+              type="submit"
+              class="btn btn-success mt-4"
             >
               начать
             </button>
-          </div>
+          </form>
         </div>
       </div>
     </main>

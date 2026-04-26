@@ -19,6 +19,7 @@
     "daisyui": "^5.5.19",
     "preact": "^10.29.1",
     "preact-iso": "^2.11.1",
+    "react-hook-form": "^7.74.0",
     "tailwindcss": "^4.2.4",
     "web-bip39": "^0.0.3"
   },

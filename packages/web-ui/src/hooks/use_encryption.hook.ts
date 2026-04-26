@@ -10,14 +10,13 @@ const EncryptionModel = createModel(() => {
     const bip39 = await import('bip39');
     const webBip39 = await import('web-bip39');
 
-    seed.value = await webBip39.generateMnemonic(bip39.wordlists['english'], 128);
+    return await webBip39.generateMnemonic(bip39.wordlists['english'], 128);
   }
 
   const getRoomId = async () => {
     if (!seed.value) {
       throw new Error('seed фраза')
     }
-    console.log('getRoomId', seed.value)
 
     return await deriveRoomId(seed.value)
   }
@@ -26,7 +25,6 @@ const EncryptionModel = createModel(() => {
     if (!seed.value) {
       throw new Error('seed фраза')
     }
-    console.log('getAuthKey', seed.value)
 
     return await deriveAuthKey(seed.value)
   }
