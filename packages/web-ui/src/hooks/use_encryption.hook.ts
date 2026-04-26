@@ -6,15 +6,10 @@ type Seed = string | undefined;
 const seed = signal<Seed>(sessionStorage.getItem('seed') || undefined)
 
 const EncryptionModel = createModel(() => {
-  const generateSeed = async () => {
-    seed.value = genSeed();
-  }
-
   const getRoomId = async () => {
     if (!seed.value) {
       throw new Error('seed фраза')
     }
-    console.log('getRoomId', seed.value)
 
     return await deriveRoomId(seed.value)
   }
@@ -23,7 +18,6 @@ const EncryptionModel = createModel(() => {
     if (!seed.value) {
       throw new Error('seed фраза')
     }
-    console.log('getAuthKey', seed.value)
 
     return await deriveAuthKey(seed.value)
   }
@@ -61,7 +55,7 @@ const EncryptionModel = createModel(() => {
     seed,
     getRoomId,
     getAuthKey,
-    generateSeed,
+    generateSeed: genSeed,
     getProof,
     encryptMessage,
     decryptMessage,
