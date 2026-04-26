@@ -4,6 +4,8 @@ import { useUser } from '../../hooks/use_user.hook';
 import { useChat } from '../../hooks/use_chat.hook';
 import cn from 'classnames';
 import './style.css'
+import { AppLayout } from '../../components/app_layout';
+import { ChatStatus } from '../../components/chat_status';
 
 const ChatPage = () => {
   const route = useRoute();
@@ -44,74 +46,57 @@ const ChatPage = () => {
   }, []);
 
   return (
-    <main>
-      <div class="hero bg-base-200 min-h-screen">
-        <div class="hero-content text-center p-0 w-full">
-          <div class="min-w-xs w-full max-w-lg h-screen flex flex-col">
-            <div class="navbar bg-base-100 shadow-sm px-4">
-              <span class="text-xl font-bold">b_chat</span>
-              <div class="flex-1" />
-              <div class="flex items-center gap-4">
-                <span>{chat.connectionsCount}</span>
-                <span
-                  class={cn('status animate-ping', {
-                    'status-warning': !chat.connected.value,
-                    'status-success': chat.connected.value
-                  })}
-                />
+    <AppLayout
+      navRight={<ChatStatus />}
+    >
+      <div class="flex flex-col flex-1 overflow-y-auto p-4 gap-1">
+        <div class="flex flex-1 flex-col justify-end">
+          {chat.messages.value.map((msg) => (
+            <div class={cn('chat', { 'chat-end': msg.own, 'chat-start': !msg.own })}>
+              <div class="chat-header opacity-70 text-xs">
+                {msg.name}
+              </div>
+              <div class={cn('chat-bubble text-left', { 'chat-bubble-success': msg.own })}>
+                {msg.text}
               </div>
             </div>
-
-            <div class="flex flex-col flex-1 overflow-y-auto p-4 gap-1">
-              <div class="flex flex-1 flex-col justify-end">
-                {chat.messages.value.map((msg) => (
-                  <div class={cn('chat', { 'chat-end': msg.own, 'chat-start': !msg.own })}>
-                    <div class="chat-header opacity-70 text-xs">
-                      {msg.name}
-                    </div>
-                    <div class={cn('chat-bubble text-left', { 'chat-bubble-success': msg.own })}>
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            </div>
-
-            <div class="join w-full">
-              <input
-                ref={messageInputRef}
-                type="text"
-                placeholder="Type your message"
-                class="join-item input input-lg w-full"
-                onKeyDown={handleKeyDown}
-                disabled={!chat.connected.value}
-              />
-              <button
-                class="join-item btn btn-neutral btn-lg"
-                onClick={handleSendMessage}
-                disabled={!chat.connected.value}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="m15 17 5-5-5-5"/>
-                  <path d="M4 18v-2a4 4 0 0 1 4-4h12"/>
-                </svg>
-              </button>
-            </div>
-          </div>
+          ))}
+          <div ref={messagesEndRef} />
         </div>
       </div>
-    </main>
+
+      <div class="join w-full">
+        <input
+          ref={messageInputRef}
+          type="text"
+          placeholder="Type your message"
+          class="join-item input input-lg w-full"
+          onKeyDown={handleKeyDown}
+          disabled={!chat.connected.value}
+        />
+        <button
+          class="join-item btn btn-neutral btn-lg"
+          onClick={handleSendMessage}
+          disabled={!chat.connected.value}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m15 17 5-5-5-5"/>
+            <path d="M4 18v-2a4 4 0 0 1 4-4h12"/>
+          </svg>
+        </button>
+      </div>
+    </AppLayout>
+
   );
 };
 

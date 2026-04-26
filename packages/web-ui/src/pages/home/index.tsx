@@ -1,3 +1,4 @@
+import { AppTitle } from '../../components/app_title';
 import './style.css'
 
 const HomePage = () => {
@@ -6,7 +7,7 @@ const HomePage = () => {
       <div class="hero bg-base-200 min-h-screen">
         <div class="hero-content text-center">
           <div class="max-w-md">
-            <h1 class="text-5xl font-bold">Привет это <span class="text-success">b_c</span><i>hat</i></h1>
+            <h1 class="text-5xl font-bold">Привет это <AppTitle /></h1>
             <p class="py-6">
               Мгновенные чаты. Анонимно. Приватно.
             </p>
