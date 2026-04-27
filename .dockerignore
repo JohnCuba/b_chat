@@ -1,0 +1,12 @@
+**/node_modules
+**/target
+packages/crypto/pkg
+apps/backend/b_chat
+apps/backend/public/assets
+apps/backend/public/index.html
+apps/backend/*.bun-build
+.git
+.github
+**/*.log
+.env
+.env.*

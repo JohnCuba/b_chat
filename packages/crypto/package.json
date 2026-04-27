@@ -13,6 +13,9 @@
   },
   "main": "crypto.js",
   "types": "crypto.d.ts",
+  "scripts": {
+    "build": "wasm-pack build --target bundler --release"
+  },
   "sideEffects": [
     "./crypto.js",
     "./snippets/*"
