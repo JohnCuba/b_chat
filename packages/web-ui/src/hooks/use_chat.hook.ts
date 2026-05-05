@@ -37,7 +37,11 @@ const ChatModel = createModel<{
     ws = backend.api.chat.subscribe({ query: { id: roomId } });
 
     ws.on('message', async (event) => {
-      const data = event.data as ServerMessage;
+      let data: ServerMessage = event.data as ServerMessage
+
+      if (typeof event.data === 'string') {
+        data = JSON.parse(event.data as string) as ServerMessage;
+      }
 
       switch (data.type) {
         case 'challenge': {
