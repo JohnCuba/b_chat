@@ -32,20 +32,3 @@ export type ServerMessage =
   | ErrorMessage
   | IncomingChatMessage
   | ConnectionsMessage;
-
-// Client -> Server messages
-
-export interface ChallengeResponseMessage {
-  type: 'challenge_response';
-  proof: string;
-}
-
-export interface OutgoingChatMessage {
-  type: 'message';
-  name: string;
-  text: string;
-}
-
-export type ClientMessage =
-  | ChallengeResponseMessage
-  | OutgoingChatMessage;

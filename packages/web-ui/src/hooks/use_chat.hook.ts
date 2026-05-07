@@ -1,5 +1,6 @@
 import { signal, createModel, useModel, type Signal } from '@preact/signals';
-import type { ServerMessage, ClientMessage } from '@b_chat/protocol';
+import type { ServerMessage, ErrorMessage } from '@b_chat/protocol';
+import type { Treaty } from '@elysiajs/eden'
 import { useEncryption } from './use_encryption.hook';
 import { backend } from '../services/backend';
 import { useRoom } from './use_room.hook';
@@ -28,6 +29,47 @@ const ChatModel = createModel<{
 
   let ws: ReturnType<typeof backend.api.chat.subscribe> | null = null;
 
+  const handleErrorMessage = async ({ data }: Treaty.OnMessage<ErrorMessage>) => {
+    if (data.message === 'room_not_found') {
+      const url = await room.create()
+      connect(url.searchParams.get('id') as string)
+    } else if (data.message === 'auth_failed') {
+      alert('Неверная seed фраза');
+      globalThis.location.replace('/start');
+    }
+  }
+
+  const handleMessage = async (event: Treaty.OnMessage<ServerMessage>) => {
+    switch (event.data.type) {
+      case 'challenge': {
+        const proof = await encryption.getProof(event.data.nonce);
+        ws!.send({ type: 'challenge_response', proof });
+        break;
+      }
+      case 'authenticated': {
+        connected.value = true;
+        break;
+      }
+      case 'error': {
+        return handleErrorMessage(event as Treaty.OnMessage<ErrorMessage>)
+      }
+      case 'connections': {
+        connectionsCount.value = event.data.count;
+        break;
+      }
+      case 'message': {
+        const text = await encryption.decryptMessage(event.data.text);
+        messages.value = [...messages.value, {
+          name: event.data.name,
+          text,
+          ts: event.data.ts,
+          own: false,
+        }];
+        break;
+      }
+    }
+  }
+
   const connect = (roomId: string) => {
     if (!encryption.seed.value) {
       globalThis.location.replace('/start');
@@ -36,60 +78,13 @@ const ChatModel = createModel<{
 
     ws = backend.api.chat.subscribe({ query: { id: roomId } });
 
-    ws.on('message', async (event) => {
-      let data: ServerMessage = event.data as ServerMessage
-
-      if (typeof event.data === 'string') {
-        data = JSON.parse(event.data as string) as ServerMessage;
-      }
-
-      switch (data.type) {
-        case 'challenge': {
-          const proof = await encryption.getProof(data.nonce);
-          ws!.send({ type: 'challenge_response', proof } satisfies ClientMessage);
-          break;
-        }
-        case 'authenticated': {
-          connected.value = true;
-          break;
-        }
-        case 'error': {
-            if (data.message === 'room_not_found') {
-              if (roomId !== await encryption.getRoomId()) {
-                alert('Неверная seed фраза');
-                globalThis.location.replace('/start');
-              }
-
-              const url = await room.create()
-              connect(url.searchParams.get('id') as string)
-            } else if (data.message === 'auth_failed') {
-              alert('Неверная seed фраза');
-              globalThis.location.replace('/start');
-            }
-          break;
-        }
-        case 'connections': {
-          connectionsCount.value = data.count;
-          break;
-        }
-        case 'message': {
-          const text = await encryption.decryptMessage(data.text);
-          messages.value = [...messages.value, {
-            name: data.name,
-            text,
-            ts: data.ts,
-            own: false,
-          }];
-          break;
-        }
-      }
-    });
+    ws.on('message', handleMessage as (event: Treaty.OnMessage<unknown>) => void);
   };
 
   const send = async (name: string, text: string) => {
     if (!ws || !connected.value) return;
     const encrypted = await encryption.encryptMessage(text);
-    ws.send({ type: 'message', name, text: encrypted } satisfies ClientMessage);
+    ws.send({ type: 'message', name, text: encrypted });
     messages.value = [...messages.value, { name, text, ts: Date.now(), own: true }];
   };
 

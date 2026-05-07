@@ -1,6 +1,6 @@
 import Elysia, { t } from 'elysia';
 import { randomBytes, createHmac, timingSafeEqual } from 'crypto';
-import type { ServerMessage, ClientMessage, ChallengeMessage, AuthenticatedMessage, ErrorMessage, IncomingChatMessage, ConnectionsMessage } from '@b_chat/protocol';
+import type { ServerMessage, ChallengeMessage, AuthenticatedMessage, ErrorMessage, IncomingChatMessage, ConnectionsMessage } from '@b_chat/protocol';
 import { logger } from '../../lib/logger';
 import { MemoryRoomRepository } from './repository';
 import { cron } from '@elysia/cron';
@@ -29,8 +29,6 @@ export const chatModule = () => {
       })
     })
     .ws('/chat', {
-      query: t.Object({ id: t.String({ minLength: 64, maxLength: 64 }) }),
-
       open(ws) {
         const roomId = ws.data.query.id;
         const room = ws.data.rooms.get(roomId);
@@ -46,7 +44,7 @@ export const chatModule = () => {
         ws.send(encode({ type: 'challenge', nonce } satisfies ChallengeMessage));
       },
 
-      message(ws, body: ClientMessage) {
+      message(ws, body) {
         const roomId = ws.data.query.id;
         const room = ws.data.rooms.get(roomId);
         if (!room) return;
@@ -112,6 +110,20 @@ export const chatModule = () => {
           logger.debug({ roomId }, 'room removed (empty)');
         }
       },
+
+      query: t.Object({ id: t.String({ minLength: 64, maxLength: 64 }) }),
+
+      body: t.Union([
+        t.Object({
+          type: t.Literal('challenge_response'),
+          proof: t.String()
+        }),
+        t.Object({
+          type: t.Literal('message'),
+          name: t.String(),
+          text: t.String()
+        }),
+      ]),
     })
     .use(
       cron({
