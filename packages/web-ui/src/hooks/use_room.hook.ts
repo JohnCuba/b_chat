@@ -11,7 +11,7 @@ const RoomModel = createModel(() => {
 
     const data = await backend.api.room.post({ roomId, authKey });
 
-    if (data.error?.value.message === 'room_exists') {
+    if (data.error?.value && data.error.value.message === 'room_exists') {
       throw new Error('Комната с такой фразой уже существует');
     }
 

@@ -30,7 +30,7 @@ const hexToBuf = (hex: string): ArrayBuffer =>
  * Импортирует seed-фразу как базовый ключ HKDF.
  * Из него далее выводятся все производные ключи.
  */
-const deriveHkdfBase = async (seed: string) =>
+const deriveHkdfBase = (seed: string) =>
   crypto.subtle.importKey('raw', encoder.encode(seed), KEY_DERIVE_ALGO, false, ['deriveBits', 'deriveKey']);
 
 /**

@@ -61,7 +61,7 @@ const ChatModel = createModel<{
               }
 
               const url = await room.create()
-              connect(url.searchParams.get('id'))
+              connect(url.searchParams.get('id') as string)
             } else if (data.message === 'auth_failed') {
               alert('Неверная seed фраза');
               globalThis.location.replace('/start');
