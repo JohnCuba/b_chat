@@ -1,49 +1,56 @@
 import { signal, createModel, useModel, type Signal } from '@preact/signals';
 import type { ServerMessage, ErrorMessage } from '@b_chat/protocol';
+import { deriveAuthKey, solveChallenge, decrypt, encrypt } from '@b_chat/crypto';
 import type { Treaty } from '@elysiajs/eden'
-import { useEncryption } from './use_encryption.hook';
-import { backend } from '../services/backend';
-import { useRoom } from './use_room.hook';
+import { backend } from '../data/services/backend.service';
+import type { Chat } from '../data/models/chat.model';
+import { useChatManager } from './use_chat_manager.hook';
 
-export interface Message {
+export type Message = {
   name: string;
   text: string;
   ts: number;
   own: boolean;
 }
 
-const messages = signal<Message[]>([]);
-const connected = signal(false);
-const connectionsCount = signal<number>(0);
+const chatInfo = signal<Chat>()
+const messages = signal<Message[]>([])
+const connected = signal(false)
+const connectionsCount = signal<number>(0)
 
 const ChatModel = createModel<{
   messages: Signal<Message[]>;
   connected: Signal<boolean>;
   connectionsCount: Signal<number>;
-  connect: (roomId: string) => void;
-  send: (name: string, text: string) => void;
+  connect: (chat: Chat) => void;
+  send: (text: string) => void;
   disconnect: () => void;
 }>(() => {
-  const room = useRoom()
-  const encryption = useEncryption();
-
+  const chatManager = useChatManager()
   let ws: ReturnType<typeof backend.api.chat.subscribe> | null = null;
 
   const handleErrorMessage = async ({ data }: Treaty.OnMessage<ErrorMessage>) => {
-    if (data.message === 'room_not_found') {
-      const url = await room.create()
-      connect(url.searchParams.get('id') as string)
+    if (data.message === 'chat_not_found') {
+      if (!chatInfo.value) return
+      disconnect()
+      await chatManager.create(chatInfo.value?.name, chatInfo.value?.seed)
+      connect(chatInfo.value)
     } else if (data.message === 'auth_failed') {
       alert('Неверная seed фраза');
-      globalThis.location.replace('/start');
+      globalThis.location.replace('/');
     }
   }
 
   const handleMessage = async (event: Treaty.OnMessage<ServerMessage>) => {
+    if (!chatInfo.value) return;
+
     switch (event.data.type) {
       case 'challenge': {
-        const proof = await encryption.getProof(event.data.nonce);
-        ws!.send({ type: 'challenge_response', proof });
+        const authKey = await deriveAuthKey(chatInfo.value.seed)
+        const proof = await solveChallenge(authKey, event.data.nonce)
+
+        ws!.send({ type: 'challenge_response', proof })
+
         break;
       }
       case 'authenticated': {
@@ -58,34 +65,42 @@ const ChatModel = createModel<{
         break;
       }
       case 'message': {
-        const text = await encryption.decryptMessage(event.data.text);
-        messages.value = [...messages.value, {
+        const text = await decrypt(chatInfo.value.seed, event.data.text);
+
+        messages.value.push({
           name: event.data.name,
           text,
           ts: event.data.ts,
           own: false,
-        }];
+        });
+
         break;
       }
     }
   }
 
-  const connect = (roomId: string) => {
-    if (!encryption.seed.value) {
-      globalThis.location.replace('/start');
-      return;
-    }
-
-    ws = backend.api.chat.subscribe({ query: { id: roomId } });
-
+  const connect = (chat: Chat) => {
+    ws = backend.api.chat.subscribe({ query: { id: chat.id } })
     ws.on('message', handleMessage as (event: Treaty.OnMessage<unknown>) => void);
+    chatInfo.value = chat
   };
 
-  const send = async (name: string, text: string) => {
-    if (!ws || !connected.value) return;
-    const encrypted = await encryption.encryptMessage(text);
-    ws.send({ type: 'message', name, text: encrypted });
-    messages.value = [...messages.value, { name, text, ts: Date.now(), own: true }];
+  const send = async (text: string) => {
+    if (!ws || !connected.value || !chatInfo.value) return;
+    const encrypted = await encrypt(chatInfo.value.seed, text);
+
+    ws.send({
+      type: 'message',
+      name: chatInfo.value.name,
+      text: encrypted,
+    });
+
+    messages.value.push({
+      name: chatInfo.value.name,
+      text,
+      ts: Date.now(),
+      own: true,
+    });
   };
 
   const disconnect = () => {

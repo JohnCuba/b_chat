@@ -121,7 +121,7 @@ export const chatModule = () => {
         t.Object({
           type: t.Literal('message'),
           name: t.String(),
-          text: t.String()
+          text: t.String(),
         }),
       ]),
     })

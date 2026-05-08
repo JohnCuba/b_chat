@@ -9,8 +9,9 @@ export const App = () => {
       <ErrorBoundary>
         <Router>
           <Route path='/' component={lazy(() => import('./pages/home'))} />
-          <Route path='/start' component={lazy(() => import('./pages/start'))} />
-          <Route path='/chat' component={lazy(() => import('./pages/chat'))} />
+          <Route path='/chats' component={lazy(() => import('./pages/chats'))} />
+          <Route path='/chat/new' component={lazy(() => import('./pages/chat_new'))} />
+          <Route path='/chat/:id' component={lazy(() => import('./pages/chat'))} />
         </Router>
       </ErrorBoundary>
     </LocationProvider>

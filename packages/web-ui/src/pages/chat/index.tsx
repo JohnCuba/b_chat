@@ -1,15 +1,17 @@
 import { useRef, useEffect } from 'preact/hooks';
-import { useRoute } from 'preact-iso';
-import { useUser } from '../../hooks/use_user.hook';
-import { useChat } from '../../hooks/use_chat.hook';
+import type { RoutePropsForPath } from 'preact-iso';
 import cn from 'classnames';
-import './style.css'
+import { useChat } from '../../hooks/use_chat.hook';
 import { AppLayout } from '../../components/app_layout';
 import { ChatStatus } from '../../components/chat_status';
+import { useChatManager } from '../../hooks/use_chat_manager.hook';
 
-const ChatPage = () => {
-  const route = useRoute();
-  const user = useUser();
+import './style.css'
+
+type Props = RoutePropsForPath<'/chat/:id'>
+
+const ChatPage = (props: Props) => {
+  const chatManager = useChatManager()
   const chat = useChat();
 
   const messageInputRef = useRef<HTMLInputElement>(null);
@@ -21,8 +23,10 @@ const ChatPage = () => {
 
   const handleSendMessage = () => {
     if (!messageInputRef.current?.value) return;
-    chat.send(user.name.value || 'Anonymous', messageInputRef.current.value);
+
+    chat.send(messageInputRef.current.value);
     messageInputRef.current.value = '';
+
     scrollToBottom();
   };
 
@@ -31,19 +35,15 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [chat.messages.value])
+    chatManager.get(props.id).then((chatInfo) => {
+      chat.connect(chatInfo)
+    })
+    return () => chat.disconnect()
+  }, [])
 
   useEffect(() => {
-    const roomId = route.query.id;
-    if (!roomId) {
-      globalThis.location.replace('/join');
-      return;
-    }
-
-    chat.connect(roomId);
-    return () => chat.disconnect();
-  }, []);
+    scrollToBottom()
+  }, [chat.messages.value])
 
   return (
     <AppLayout
@@ -96,7 +96,6 @@ const ChatPage = () => {
         </button>
       </div>
     </AppLayout>
-
   );
 };
 

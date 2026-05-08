@@ -1,7 +1,22 @@
+import { useSignal } from '@preact/signals';
 import { AppTitle } from '../../components/app_title';
+import { useChatManager } from '../../hooks/use_chat_manager.hook';
+import { useEffect } from 'preact/hooks';
+
 import './style.css'
 
 const HomePage = () => {
+  const startLink = useSignal('/chat/new')
+  const chatManager = useChatManager()
+
+  useEffect(() => {
+    chatManager.getAll().then((chatList) => {
+      if (chatList.length) {
+        startLink.value = '/chats'
+      }
+    })
+  }, [])
+
   return (
     <main>
       <div class="hero bg-base-200 min-h-screen">
@@ -13,7 +28,7 @@ const HomePage = () => {
             </p>
             <a
               class="btn btn-success"
-              href="/start"
+              href={startLink}
             >
               начать
             </a>

@@ -1,18 +1,16 @@
-import { useUser } from '../../hooks/use_user.hook';
+import { useLocation } from 'preact-iso';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import cn from 'classnames'
-import { useEncryption } from '../../hooks/use_encryption.hook';
-import { useRoom } from '../../hooks/use_room.hook';
-import './style.css'
+import { useChatManager } from '../../hooks/use_chat_manager.hook';
 import { AppLayout } from '../../components/app_layout';
-import { useLocation } from 'preact-iso';
+import './style.css'
 
 type Inputs = {
   name: string
   seed: string
 }
 
-const StartPage = () => {
+const NewChatPage = () => {
   const {
     getValues,
     setValue,
@@ -20,13 +18,11 @@ const StartPage = () => {
     register,
     formState: { errors },
   } = useForm<Inputs>()
-  const user = useUser()
-  const encryption = useEncryption()
-  const room = useRoom()
+  const chatManager = useChatManager()
   const location = useLocation()
 
   const handleClickGenerate = async () => {
-    setValue('seed', await encryption.generateSeed());
+    setValue('seed', await chatManager.generateSeed());
   }
 
   const handleClickCopy = async () => {
@@ -38,12 +34,12 @@ const StartPage = () => {
   }
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    user.name.value = data.name;
-    encryption.seed.value = data.seed;
+    const result = await chatManager.create(data.name, data.seed)
+    await chatManager.save(result.chatId, result.name, result.seed)
 
-    const roomUrl = await room.create();
+    const target = new URL(`/chat/${result.chatId}`, globalThis.location.origin);
 
-    location.route(roomUrl.toString());
+    location.route(target.toString());
   }
 
   return (
@@ -58,7 +54,6 @@ const StartPage = () => {
             type="text"
             placeholder="Кто-то"
             class="input w-full"
-            defaultValue={user.name.value}
             {...register('name')}
           />
           <p class="label">Можешь оставить это поле пустым</p>
@@ -71,7 +66,6 @@ const StartPage = () => {
               placeholder="Любой набор слов"
               rows={4}
               minLength={1}
-              defaultValue={encryption.seed.value}
               {...register('seed', { required: true })}
             />
             <p class="label">
@@ -113,4 +107,4 @@ const StartPage = () => {
   )
 }
 
-export default StartPage;
+export default NewChatPage;

@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite'
 import preact from '@preact/preset-vite'
 import tailwindcss from '@tailwindcss/vite'
+import { viteDecorators } from 'vite-ts-decorators'
 import path from 'node:path'
 import { brotliCompressSync } from 'node:zlib'
 import { writeFileSync } from 'node:fs'
@@ -25,7 +26,7 @@ function brotli(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [tailwindcss(), preact(), brotli()],
+  plugins: [viteDecorators(), tailwindcss(), preact(), brotli()],
   resolve: {
     mainFields: ['module', 'main'],
   },
