@@ -1,13 +1,13 @@
 import type { ServerWebSocket } from "elysia/ws/bun";
-import type { Room, RoomEntry, RoomRepository } from '../model/rooms';
+import type { Chat, ChatEntry, ChatRepository } from '../model/chat';
 
-export class MemoryRoomRepository implements RoomRepository {
-  private rooms = new Map<string, RoomEntry>();
+export class MemoryChatRepository implements ChatRepository {
+  private chats = new Map<string, ChatEntry>();
 
-  create(roomId: string, authKey: string): boolean {
-    if (this.rooms.has(roomId)) return false;
+  create(chatId: string, authKey: string): boolean {
+    if (this.chats.has(chatId)) return false;
 
-    this.rooms.set(roomId, {
+    this.chats.set(chatId, {
       authKey,
       connections: new Map(),
       pendingChallenges: new Map(),
@@ -15,55 +15,55 @@ export class MemoryRoomRepository implements RoomRepository {
     return true;
   }
 
-  get(roomId: string): Room | undefined {
-    const entry = this.rooms.get(roomId);
+  get(chatId: string): Chat | undefined {
+    const entry = this.chats.get(chatId);
     if (!entry) return undefined;
     return { authKey: entry.authKey };
   }
 
-  exists(roomId: string): boolean {
-    return this.rooms.has(roomId);
+  exists(chatId: string): boolean {
+    return this.chats.has(chatId);
   }
 
-  delete(roomId: string): void {
-    this.rooms.delete(roomId);
+  delete(chatId: string): void {
+    this.chats.delete(chatId);
   }
 
-  addConnection(roomId: string, connId: string, ws: ServerWebSocket<unknown>): void {
-    this.rooms.get(roomId)?.connections.set(connId, ws);
+  addConnection(chatId: string, connId: string, ws: ServerWebSocket<unknown>): void {
+    this.chats.get(chatId)?.connections.set(connId, ws);
   }
 
-  removeConnection(roomId: string, connId: string): void {
-    this.rooms.get(roomId)?.connections.delete(connId);
+  removeConnection(chatId: string, connId: string): void {
+    this.chats.get(chatId)?.connections.delete(connId);
   }
 
-  getConnections(roomId: string): Map<string, ServerWebSocket<unknown>> | undefined {
-    return this.rooms.get(roomId)?.connections;
+  getConnections(chatId: string): Map<string, ServerWebSocket<unknown>> | undefined {
+    return this.chats.get(chatId)?.connections;
   }
 
-  setPendingChallenge(roomId: string, connId: string, nonce: string): void {
-    this.rooms.get(roomId)?.pendingChallenges.set(connId, nonce);
+  setPendingChallenge(chatId: string, connId: string, nonce: string): void {
+    this.chats.get(chatId)?.pendingChallenges.set(connId, nonce);
   }
 
-  getPendingChallenge(roomId: string, connId: string): string | undefined {
-    return this.rooms.get(roomId)?.pendingChallenges.get(connId);
+  getPendingChallenge(chatId: string, connId: string): string | undefined {
+    return this.chats.get(chatId)?.pendingChallenges.get(connId);
   }
 
-  deletePendingChallenge(roomId: string, connId: string): void {
-    this.rooms.get(roomId)?.pendingChallenges.delete(connId);
+  deletePendingChallenge(chatId: string, connId: string): void {
+    this.chats.get(chatId)?.pendingChallenges.delete(connId);
   }
 
-  isEmpty(roomId: string): boolean {
-    const entry = this.rooms.get(roomId);
+  isEmpty(chatId: string): boolean {
+    const entry = this.chats.get(chatId);
     if (!entry) return true;
     return entry.connections.size === 0 && entry.pendingChallenges.size === 0;
   }
 
-  getAllRoomConnections(): Map<string, Map<string, ServerWebSocket<unknown>>> {
+  getAllChatConnections(): Map<string, Map<string, ServerWebSocket<unknown>>> {
     const result = new Map<string, Map<string, ServerWebSocket<unknown>>>();
-    for (const [roomId, entry] of this.rooms) {
+    for (const [chatId, entry] of this.chats) {
       if (entry.connections.size > 0) {
-        result.set(roomId, entry.connections);
+        result.set(chatId, entry.connections);
       }
     }
     return result;

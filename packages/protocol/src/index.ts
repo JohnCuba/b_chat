@@ -16,7 +16,7 @@ export interface AuthenticatedMessage {
 
 export interface ErrorMessage {
   type: 'error';
-  message: 'room_not_found' | 'expected_challenge_response' | 'auth_failed';
+  message: 'chat_not_found' | 'expected_challenge_response' | 'auth_failed';
 }
 
 export interface IncomingChatMessage {

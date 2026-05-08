@@ -1,1 +1,1 @@
-export { MemoryRoomRepository } from './memory.repository';
+export { MemoryChatRepository } from './memory.repository';

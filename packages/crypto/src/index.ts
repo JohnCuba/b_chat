@@ -2,7 +2,7 @@
  * Криптографический модуль чата.
  *
  * Из единой seed-фразы через HKDF выводятся три независимых ключа:
- *  - roomId  (идентификатор комнаты)
+ *  - chatId  (идентификатор чата)
  *  - authKey (ключ для challenge-response аутентификации)
  *  - encKey  (ключ AES-256-GCM для шифрования сообщений)
  *
@@ -49,7 +49,7 @@ const deriveHex = async (seed: string, salt: string): Promise<string> => {
 
 /**
  * Выводит CryptoKey для AES-256-GCM шифрования/дешифрования.
- * Использует фиксированный salt 'enc_key', отличный от roomId и authKey.
+ * Использует фиксированный salt 'enc_key', отличный от chatId и authKey.
  */
 const deriveEncryptionKey = async (seed: string): Promise<CryptoKey> => {
   const baseKey = await deriveHkdfBase(seed);
@@ -65,7 +65,7 @@ const deriveEncryptionKey = async (seed: string): Promise<CryptoKey> => {
 // ─── Публичные функции ───
 
 /** Детерминированно выводит идентификатор комнаты (64-символьная hex-строка) из seed-фразы. */
-export const deriveRoomId = (seed: string) => deriveHex(seed, 'room_id');
+export const deriveChatId = (seed: string) => deriveHex(seed, 'chat_id');
 
 /** Детерминированно выводит ключ аутентификации (64-символьная hex-строка) из seed-фразы. */
 export const deriveAuthKey = (seed: string) => deriveHex(seed, 'auth_key');

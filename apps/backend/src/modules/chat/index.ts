@@ -2,54 +2,54 @@ import Elysia, { t } from 'elysia';
 import { randomBytes, createHmac, timingSafeEqual } from 'crypto';
 import type { ServerMessage, ChallengeMessage, AuthenticatedMessage, ErrorMessage, IncomingChatMessage, ConnectionsMessage } from '@b_chat/protocol';
 import { logger } from '../../lib/logger';
-import { MemoryRoomRepository } from './repository';
+import { MemoryChatRepository } from './repository';
 import { cron } from '@elysia/cron';
 
 const encode = (msg: ServerMessage) => JSON.stringify(msg);
 
 export const chatModule = () => {
-  const rooms = new MemoryRoomRepository();
+  const chats = new MemoryChatRepository();
 
   return new Elysia({ prefix: '/api' })
-    .decorate('rooms', rooms)
-    .post('/room', ({ body, set, rooms }) => {
-      const { roomId, authKey } = body;
+    .decorate('chats', chats)
+    .post('/chat', ({ body, set, chats }) => {
+      const { chatId, authKey } = body;
 
-      if (!rooms.create(roomId, authKey)) {
+      if (!chats.create(chatId, authKey)) {
         set.status = 409;
-        return { ok: false, error: 'room_exists' };
+        return { ok: false, error: 'chat_exists' };
       }
 
-      logger.debug({ roomId }, 'room created');
+      logger.debug({ chatId }, 'chat created');
       return { ok: true };
     }, {
       body: t.Object({
-        roomId: t.String({ minLength: 64, maxLength: 64 }),
+        chatId: t.String({ minLength: 64, maxLength: 64 }),
         authKey: t.String({ minLength: 64, maxLength: 64 }),
       })
     })
     .ws('/chat', {
       open(ws) {
-        const roomId = ws.data.query.id;
-        const room = ws.data.rooms.get(roomId);
+        const chatId = ws.data.query.id;
+        const chat = ws.data.chats.get(chatId);
 
-        if (!room) {
-          ws.send(encode({ type: 'error', message: 'room_not_found' } satisfies ErrorMessage));
+        if (!chat) {
+          ws.send(encode({ type: 'error', message: 'chat_not_found' } satisfies ErrorMessage));
           ws.close();
           return;
         }
 
         const nonce = randomBytes(32).toString('hex');
-        ws.data.rooms.setPendingChallenge(roomId, ws.id, nonce);
+        ws.data.chats.setPendingChallenge(chatId, ws.id, nonce);
         ws.send(encode({ type: 'challenge', nonce } satisfies ChallengeMessage));
       },
 
       message(ws, body) {
-        const roomId = ws.data.query.id;
-        const room = ws.data.rooms.get(roomId);
-        if (!room) return;
+        const chatId = ws.data.query.id;
+        const chat = ws.data.chats.get(chatId);
+        if (!chat) return;
 
-        const pendingNonce = ws.data.rooms.getPendingChallenge(roomId, ws.id);
+        const pendingNonce = ws.data.chats.getPendingChallenge(chatId, ws.id);
 
         if (pendingNonce) {
           if (body.type !== 'challenge_response') {
@@ -57,7 +57,7 @@ export const chatModule = () => {
             return;
           }
 
-          const expected = createHmac('sha256', Buffer.from(room.authKey, 'hex'))
+          const expected = createHmac('sha256', Buffer.from(chat.authKey, 'hex'))
             .update(pendingNonce)
             .digest('hex');
 
@@ -71,10 +71,10 @@ export const chatModule = () => {
             return;
           }
 
-          ws.data.rooms.deletePendingChallenge(roomId, ws.id);
-          ws.data.rooms.addConnection(roomId, ws.id, ws);
+          ws.data.chats.deletePendingChallenge(chatId, ws.id);
+          ws.data.chats.addConnection(chatId, ws.id, ws);
           ws.send(encode({ type: 'authenticated' } satisfies AuthenticatedMessage));
-          const connections = ws.data.rooms.getConnections(roomId);
+          const connections = ws.data.chats.getConnections(chatId);
           if (!connections) return;
 
           for (const [, conn] of connections) {
@@ -91,7 +91,7 @@ export const chatModule = () => {
             text: body.text,
             ts: Date.now(),
           } satisfies IncomingChatMessage);
-          const connections = ws.data.rooms.getConnections(roomId);
+          const connections = ws.data.chats.getConnections(chatId);
           if (connections) {
             for (const [id, conn] of connections) {
               if (id !== ws.id) conn.send(outgoing);
@@ -101,13 +101,13 @@ export const chatModule = () => {
       },
 
       close(ws) {
-        const roomId = ws.data.query.id;
-        ws.data.rooms.removeConnection(roomId, ws.id);
-        ws.data.rooms.deletePendingChallenge(roomId, ws.id);
+        const chatId = ws.data.query.id;
+        ws.data.chats.removeConnection(chatId, ws.id);
+        ws.data.chats.deletePendingChallenge(chatId, ws.id);
 
-        if (ws.data.rooms.isEmpty(roomId)) {
-          ws.data.rooms.delete(roomId);
-          logger.debug({ roomId }, 'room removed (empty)');
+        if (ws.data.chats.isEmpty(chatId)) {
+          ws.data.chats.delete(chatId);
+          logger.debug({ chatId }, 'chat removed (empty)');
         }
       },
 
@@ -130,7 +130,7 @@ export const chatModule = () => {
         name: 'connections',
         pattern: '*/10 * * * * *',
         run() {
-          const allConnections = rooms.getAllRoomConnections();
+          const allConnections = chats.getAllChatConnections();
           for (const [, connections] of allConnections) {
             const msg = encode({ type: 'connections', count: connections.size } satisfies ConnectionsMessage);
             for (const [, conn] of connections) {
