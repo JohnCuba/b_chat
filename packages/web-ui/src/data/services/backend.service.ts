@@ -1,4 +1,4 @@
-import { treaty } from '@elysiajs/eden'
-import type { App } from '@b_chat/backend'
+import { treaty } from '@elysiajs/eden';
+import type { App } from '@b_chat/backend';
 
-export const backend = treaty<App>(window.location.origin)
+export const backend = treaty<App>(window.location.origin);

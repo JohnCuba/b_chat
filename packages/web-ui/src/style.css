@@ -1,6 +1,8 @@
-@import "tailwindcss" source(none);
+@import 'tailwindcss' source(none);
 @plugin "daisyui" {
-  themes: nord --default, business --prefersdark;
+	themes:
+		nord --default,
+		business --prefersdark;
 }
 @source "./components/**";
 @source "./pages/**";

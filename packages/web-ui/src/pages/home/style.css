@@ -1,2 +1,2 @@
-@import "tailwindcss/utilities" source(none);
+@import 'tailwindcss/utilities' source(none);
 @source "./**/*.tsx";
