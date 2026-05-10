@@ -8,10 +8,12 @@ export class Chat {
 	seed!: string;
 
 	name!: string;
+	title!: string;
 
-	constructor(id: string, name: string, seed: string) {
+	constructor(id: string, name: string, title: string, seed: string) {
 		this.id = id;
 		this.name = name;
+		this.title = title;
 		this.seed = seed;
 	}
 }

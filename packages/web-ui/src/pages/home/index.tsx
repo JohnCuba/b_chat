@@ -10,7 +10,7 @@ const HomePage = () => {
 	const chatManager = useChatManager();
 
 	useEffect(() => {
-		chatManager.getAll().then((chatList) => {
+		chatManager.fetch().then((chatList) => {
 			if (chatList.length) {
 				startLink.value = '/chats';
 			}

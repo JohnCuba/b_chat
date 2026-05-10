@@ -1,5 +1,8 @@
-import { createModel, useModel } from '@preact/signals';
+import { createModel, signal, useModel } from '@preact/signals';
 import { ChatsRepo } from '../data/repos/chats.repo';
+import type { Chat } from '../data/models/chat.model';
+
+const list = signal<Chat[]>();
 
 const ChatManagerModel = createModel(() => {
 	const generateSeed = async () => {
@@ -9,8 +12,9 @@ const ChatManagerModel = createModel(() => {
 		return await webBip39.generateMnemonic(bip39.wordlists['english'], 128);
 	};
 
-	const getAll = async () => {
-		return ChatsRepo.getAll();
+	const fetch = async () => {
+		list.value = await ChatsRepo.getAll();
+		return list.value
 	};
 
 	const get = async (id: string) => {
@@ -24,6 +28,8 @@ const ChatManagerModel = createModel(() => {
 			throw new Error('TODO');
 		}
 
+		await fetch()
+
 		return {
 			name,
 			chatId: result.chatId,
@@ -31,16 +37,28 @@ const ChatManagerModel = createModel(() => {
 		};
 	};
 
-	const save = async (id: string, name: string, seed: string) => {
-		await ChatsRepo.save(id, name, seed);
+	const save = async (data: {
+		id: string,
+		name: string,
+		title?: string,
+		seed: string,
+	}) => {
+		await ChatsRepo.save(data);
 	};
 
+	const remove = async (id: string) => {
+		await ChatsRepo.remove(id)
+		await fetch()
+	}
+
 	return {
+		list,
 		generateSeed,
-		getAll,
+		fetch,
 		get,
 		create,
 		save,
+		remove,
 	};
 });
 

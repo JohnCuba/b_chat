@@ -35,7 +35,11 @@ const NewChatPage = () => {
 
 	const onSubmit: SubmitHandler<Inputs> = async (data) => {
 		const result = await chatManager.create(data.name, data.seed);
-		await chatManager.save(result.chatId, result.name, result.seed);
+		await chatManager.save({
+			id: result.chatId,
+			name: result.name,
+			seed: result.seed,
+		});
 
 		const target = new URL(`/chat/${result.chatId}`, globalThis.location.origin);
 

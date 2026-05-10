@@ -17,17 +17,31 @@ export class ChatsRepo {
 		};
 	};
 
-	static save = async (id: string, name: string, seed: string) => {
-		const chat = new Chat(id, name, seed);
+	static save = async (data: {
+		id: string,
+		name: string,
+		title?: string,
+		seed: string,
+	}) => {
+		const chat = new Chat(
+			data.id,
+			data.name,
+			data.title || new Date().toLocaleString(),
+			data.seed,
+		);
 
 		await (await database).Chat.create(chat);
 	};
 
-	static getAll = async () => {
+	static getAll = async (): Promise<Chat[]> => {
 		return await (await database).Chat.list();
 	};
 
-	static get = async (id: string) => {
-		return (await database).Chat.read(id);
+	static get = async (id: string): Promise<Chat> => {
+		return await (await database).Chat.read(id);
 	};
+
+	static remove = async (id: string) => {
+		await (await database).Chat.delete(id)
+	}
 }
