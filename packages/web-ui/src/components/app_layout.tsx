@@ -3,7 +3,6 @@ import { Navigation } from './navigation';
 
 type Props = {
 	children?: ComponentChildren;
-	navRight?: ComponentChildren;
 };
 
 export const AppLayout = (props: Props) => {
@@ -11,7 +10,7 @@ export const AppLayout = (props: Props) => {
 		<main class="hero bg-base-200 min-h-screen">
 			<div class="hero-content text-center p-0 w-full">
 				<div class="min-w-xs w-full max-w-lg h-screen flex flex-col">
-					<Navigation>{props.navRight}</Navigation>
+					<Navigation />
 					{props.children}
 				</div>
 			</div>

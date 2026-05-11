@@ -13,7 +13,7 @@ export type Message = {
 	own: boolean;
 };
 
-const chatInfo = signal<Chat>();
+const chatInfo = signal<Chat | undefined>(undefined);
 const messages = signal<Message[]>([]);
 const connected = signal(false);
 const connectionsCount = signal<number>(0);
@@ -31,10 +31,11 @@ const ChatModel = createModel<{
 
 	const handleErrorMessage = async ({ data }: Treaty.OnMessage<ErrorMessage>) => {
 		if (data.message === 'chat_not_found') {
-			if (!chatInfo.value) return;
+			const info = chatInfo.value;
+			if (!info) return;
 			disconnect();
-			await chatManager.create(chatInfo.value?.name, chatInfo.value?.seed);
-			connect(chatInfo.value);
+			await chatManager.create(info.name, info.seed);
+			connect(info);
 		} else if (data.message === 'auth_failed') {
 			alert('Неверная seed фраза');
 			globalThis.location.replace('/');
@@ -49,7 +50,7 @@ const ChatModel = createModel<{
 				const authKey = await deriveAuthKey(chatInfo.value.seed);
 				const proof = await solveChallenge(authKey, event.data.nonce);
 
-				ws!.send({ type: 'challenge_response', proof });
+				ws?.send({ type: 'challenge_response', proof });
 
 				break;
 			}
@@ -67,12 +68,15 @@ const ChatModel = createModel<{
 			case 'message': {
 				const text = await decrypt(chatInfo.value.seed, event.data.text);
 
-				messages.value.push({
-					name: event.data.name,
-					text,
-					ts: event.data.ts,
-					own: false,
-				});
+				messages.value = [
+					...messages.value,
+					{
+						name: event.data.name,
+						text,
+						ts: event.data.ts,
+						own: false,
+					},
+				];
 
 				break;
 			}
@@ -95,19 +99,30 @@ const ChatModel = createModel<{
 			text: encrypted,
 		});
 
-		messages.value.push({
-			name: chatInfo.value.name,
-			text,
-			ts: Date.now(),
-			own: true,
-		});
+		messages.value = [
+			...messages.value,
+			{
+				name: chatInfo.value.name,
+				text,
+				ts: Date.now(),
+				own: true,
+			},
+		];
 	};
 
 	const disconnect = () => {
-		ws?.close();
-		ws = null;
+		if (ws) {
+			const socket = ws;
+			ws = null;
+			if (socket.ws.readyState === WebSocket.CONNECTING) {
+				socket.ws.addEventListener('open', () => socket.close(), { once: true });
+			} else {
+				socket.close();
+			}
+		}
 		connected.value = false;
 		messages.value = [];
+		chatInfo.value = undefined;
 	};
 
 	return {

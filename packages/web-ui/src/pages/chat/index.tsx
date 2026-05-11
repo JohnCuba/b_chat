@@ -2,15 +2,16 @@ import { useRef, useEffect } from 'preact/hooks';
 import type { RoutePropsForPath } from 'preact-iso';
 import cn from 'classnames';
 import { useChat } from '../../hooks/use_chat.hook';
-import { AppLayout } from '../../components/app_layout';
 import { ChatStatus } from '../../components/chat_status';
 import { useChatManager } from '../../hooks/use_chat_manager.hook';
+import { useAppContext } from '../../hooks/use_app_context.hook';
 
 import './style.css';
 
 type Props = RoutePropsForPath<'/chat/:id'>;
 
 const ChatPage = (props: Props) => {
+	const appContext = useAppContext();
 	const chatManager = useChatManager();
 	const chat = useChat();
 
@@ -35,10 +36,18 @@ const ChatPage = (props: Props) => {
 	};
 
 	useEffect(() => {
+		let active = true;
+
+		appContext.navRight.value = <ChatStatus />;
 		chatManager.get(props.id).then((chatInfo) => {
-			chat.connect(chatInfo);
+			if (active) chat.connect(chatInfo);
 		});
-		return () => chat.disconnect();
+
+		return () => {
+			active = false;
+			appContext.navRight.value = null;
+			chat.disconnect();
+		};
 	}, []);
 
 	useEffect(() => {
@@ -46,7 +55,7 @@ const ChatPage = (props: Props) => {
 	}, [chat.messages.value]);
 
 	return (
-		<AppLayout navRight={<ChatStatus />}>
+		<>
 			<div class="flex flex-col flex-1 overflow-y-auto p-4 gap-1">
 				<div class="flex flex-1 flex-col justify-end">
 					{chat.messages.value.map((msg) => (
@@ -91,7 +100,7 @@ const ChatPage = (props: Props) => {
 					</svg>
 				</button>
 			</div>
-		</AppLayout>
+		</>
 	);
 };
 

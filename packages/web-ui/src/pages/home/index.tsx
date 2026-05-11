@@ -12,7 +12,7 @@ const HomePage = () => {
 	useEffect(() => {
 		chatManager.fetch().then((chatList) => {
 			if (chatList.length) {
-				startLink.value = '/chats';
+				startLink.value = '/chat/list';
 			}
 		});
 	}, []);

@@ -2,7 +2,6 @@ import { useLocation } from 'preact-iso';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import cn from 'classnames';
 import { useChatManager } from '../../hooks/use_chat_manager.hook';
-import { AppLayout } from '../../components/app_layout';
 import './style.css';
 
 type Inputs = {
@@ -47,7 +46,7 @@ const NewChatPage = () => {
 	};
 
 	return (
-		<AppLayout>
+		<>
 			<form class="flex flex-1 justify-center flex-col min-w-xs" onSubmit={handleSubmit(onSubmit)}>
 				<div class="fieldset">
 					<legend class="fieldset-legend">Имя</legend>
@@ -90,7 +89,7 @@ const NewChatPage = () => {
 					начать
 				</button>
 			</form>
-		</AppLayout>
+		</>
 	);
 };
 

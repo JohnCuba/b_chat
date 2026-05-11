@@ -1,5 +1,4 @@
 import { useEffect } from 'preact/hooks';
-import { AppLayout } from '../../components/app_layout';
 import { useChatManager } from '../../hooks/use_chat_manager.hook';
 
 import './style.css';
@@ -16,7 +15,7 @@ export const ChatsPage = () => {
 	}, []);
 
 	return (
-		<AppLayout>
+		<>
 			<ul class="list bg-base-100 rounded-box shadow-md">
 				{chatManager.list.value?.map((chat) => (
 					<li class="list-row flex items-center justify-between">
@@ -48,7 +47,7 @@ export const ChatsPage = () => {
 					</svg>
 				</div>
 			</a>
-		</AppLayout>
+		</>
 	);
 };
 
