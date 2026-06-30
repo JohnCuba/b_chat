@@ -6,7 +6,7 @@ import { useEffect } from 'preact/hooks';
 import './style.css';
 
 const HomePage = () => {
-	const startLink = useSignal('/chat/new');
+	const startLink = useSignal('/chat/list?new=1');
 	const chatManager = useChatManager();
 
 	useEffect(() => {

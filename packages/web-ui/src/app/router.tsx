@@ -5,8 +5,7 @@ const ChatRouter = () => {
   return (
     <AppLayout>
       <Router>
-        <Route path="/list" component={lazy(() => import('../pages/chats'))} />
-        <Route path="/new" component={lazy(() => import('../pages/chat_new'))} />
+        <Route path="/list" component={lazy(() => import('../pages/chat_list'))} />
         <Route path="/:id" component={lazy(() => import('../pages/chat'))} />
       </Router>
     </AppLayout>

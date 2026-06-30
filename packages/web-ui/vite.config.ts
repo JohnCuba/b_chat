@@ -31,6 +31,11 @@ export default defineConfig({
 	build: {
 		outDir: path.resolve(__dirname, '../../apps/backend/public'),
 		emptyOutDir: true,
+		minify: 'terser',
+		terserOptions: {
+			keep_classnames: true,
+			keep_fnames: true,
+		},
 	},
 	server: {
 		proxy: {
